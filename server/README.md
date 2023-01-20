@@ -40,7 +40,7 @@ app.listen({
 
 ## Criando o banco de dados
 - no arquivo `prisma/scheme.prisma`, criaremos uma tabela no banco de dados, seguindo a seguinte estrutura: 
-~~~
+~~~js
 // model => indica que uma tabela está sendo criada
 // @id: indica q é a chave primária
 // @default(uuid()) gera uma chave aleatória e única.
@@ -117,3 +117,101 @@ app.register(cors);
 
 - agora o frontend poderá acessar esse backend.
 
+# Aula 2
+
+## Criando mais tabelas no Banco de Dados
+
+- no `scheme.prisma`:
+   - tabela `Day`:
+   ~~~js
+   // esse uniqur determina que somente pode haver
+   // um registro no banco com essa data, pois não
+   // faz sentido o mesmo dia ser registrado 2 vezes.
+   model Day {
+      id   String   @id @default(uuid())
+      date DateTime
+
+      dayHabits DayHabit[]
+
+      @@unique([date])
+      @@map("days")
+   }
+   ~~~
+   - tabela `DayHabit`: relaciona o dia com os hábitos daquele dia.
+   ~~~js
+   // esse unique diz que o day_id só pode ser
+   // relacionado uma vez com o habit_id, pois o
+   // hábito só é registrado uma vez por dia.
+   model DayHabit {
+      id       String @id @default(uuid())
+      day_id   String
+      habit_id String
+
+      day   Day   @relation(fields: [day_id], references: [id])
+      habit Habit @relation(fields: [habit_id], references: [id])
+
+      @@unique([day_id, habit_id])
+      @@map("day_habits")
+   }
+   ~~~
+   - tabela `HabitWeekDays`:
+   ~~~js
+   // unique: o hábito só pode estar disponível 1 vez no mesmo dia da semana.
+   model HabitWeekDays {
+      id       String @id @default(uuid())
+      habit_id String
+      week_day Int
+
+      habit Habit @relation(fields: [habit_id], references: [id])
+
+      @@unique([habit_id, week_day])
+      @@map("habit_week_days")
+   }
+   ~~~
+- `npx migrate dev` para carregar as mudanças pro banco (migrate criado no arquivo prisma/migrations).
+
+## Adicionando relação entre as tabelas
+- `DayHabit`:
+   ~~~js
+   // day referencia o model Day
+   // habit referencia o model Habit
+   model DayHabit {
+      ...
+      day   Day
+      habit Habit
+      ...
+   }
+   // dar o format (shif+alt+f) para completar automaticamente.
+   // vai criar dayId e habitId em camelcase, mas como ja criei em cima (day_id e habit_id), basta substituir nos fields e apagar os em camelcase.
+   model DayHabit {
+      ...
+      day   Day   @relation(fields: [day_id], references: [id])
+      habit Habit @relation(fields: [habit_id], references: [id])
+      ...
+   // o prisma tbm cria automaticamente os relacionamentos inversos:
+   model Day {
+      ...
+      dayHabits DayHabit[]
+      ...
+   }
+   }
+   ~~~
+- esse `@relation` não cria uma tabela nova, é só pro prisma entender que há uma relação, então as referências seguem o formato camelcase (dayHabits, por exemplo), o formato com underline é para as tabelas.
+
+- `HabitWeekDays`:
+~~~js
+   model HabitWeekDays {
+      //mesma parada do de cima.
+      ...
+      habit Habit @relation(fields: [habit_id], references: [id])
+      ...
+   }
+
+   model Habit {
+      ...
+      weekDays  HabitWeekDays[]
+      ...
+   }
+   ~~~
+
+- `npx prisma migrate dev` para passar as mudanças pro banco.
