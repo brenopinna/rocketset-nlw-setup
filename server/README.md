@@ -215,3 +215,18 @@ app.register(cors);
    ~~~
 
 - `npx prisma migrate dev` para passar as mudanças pro banco.
+
+## Seed do banco de dados
+- seed é um populador do banco, ele cria dados fictícios para testar as rotas da API, usado no ambiente de desenvolvimento.
+- criar `prisma/seed.ts`
+- `npm i -D @types/node` (pq da um erro)
+- copiar o código de seed fornecido na aula (ele ta no arquivo seed.ts)
+- no `package.json`:
+   ~~~json
+   "prisma": {
+   "seed": "tsx prisma/seed.ts"
+   }
+   ~~~
+- vai vir como `ts-node prisma/seed.ts` na documentação do prisma seed, mas a biblioteca que usei nesse projeto para interpretação do typescript pelo node foi a tsx.
+- `npx prisma db seed` para dar run no arquivo e popular o banco.
+- `npx prisma studio` para visualizar o banco atualizado.
