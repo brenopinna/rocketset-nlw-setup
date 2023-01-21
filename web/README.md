@@ -65,3 +65,103 @@ content: [
 </div>
 ~~~
 - OBS: se não carregar o estilo, reinicia o servidor do vite.
+
+- falando bem rápido pelo tempo:
+- no `tailwind.config.cjs`:
+~~~json
+theme: {
+    extend: {
+      colors: {
+        background: '#09090A'
+      },
+      gridTemplateRows: {
+        7: "repeat(7, minmax(0, 1fr))"
+      }
+    },
+  },
+~~~
+- adiciona a opção de cor -background, com o valor ali especificado, e a opção de grid-rows -7, com o valor dali.
+
+- no `index.html`:
+   ~~~html
+   <body class="bg-background text-white">
+   ~~~
+
+- `/components/*`
+   - HabitDay => Só estilo
+   - Header
+      - `npm i phosphor-react`
+         ~~~ts
+         import { Plus } from 'phosphor-react'
+         ~~~
+      - usar ele no button
+   - SummaryTable => aqui fica complexo, vamos lá:
+   ~~~tsx
+   // renderizar os dias da semana:
+   const weekDays = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
+
+   export const SummaryTable = () => {
+      return(
+         <div className="w-full flex">
+            <div className="grid grid-rows-7 grid-flow-row gap-3">
+               {weekDays.map((weekDay, index) => (
+                  <div
+                     key={`${weekDay}-${index}`}
+                     className="text-zinc-400 text-xl h-10 w-10 font-bold flex items-center justify-center"
+                  >
+                     {weekDay}
+                  </div>
+               ))}
+            </div>
+         </div>
+      )
+   }
+   ~~~
+   - `npm i dayjs`
+   ~~~tsx
+   // arquivo src/utils/generate-dates-from-year-beginning.ts
+   import dayjs from 'dayjs';
+
+   export function generateDatesFromYearBeggining() {
+      const firstDayOfTheYear = dayjs().startOf('year')
+      const today = new Date();
+
+      const dates = [];
+      let compareDate = firstDayOfTheYear;
+
+      while(compareDate.isBefore(today)) {
+         dates.push(compareDate.toDate())
+         compareDate = compareDate.add(1, 'day')
+      }
+
+      return dates;
+   }
+   ~~~
+   ~~~tsx
+   // adicionando numero minimo de quadradinhos no SummaryTable.tsx
+   ...
+   import { generateDatesFromYearBeggining } from "../utils/generate-dates-from-year-beginning";
+   ...
+   const summaryDates = generateDatesFromYearBeggining();
+
+   const minimumSummaryDatesSize = 18 * 7 //18 semanas, ou seja, 18 colunas de 7 dias
+   const amountOfDaysToFill = minimumSummaryDatesSize - summaryDates.length;
+
+   export const SummaryTable = () => {
+      return(
+         <div className="w-full flex">
+            ...
+            <div className="grid grid-rows-7 grid-flow-col gap-3">
+               {summaryDates.map(summaryDate => <HabitDay key={summaryDate.toString()} />)}
+
+               {amountOfDaysToFill > 0 && Array.from({ length: amountOfDaysToFill}).map((_, i) => (
+                  <div
+                     key={i}
+                     className="w-10 h-10 bg-zinc-900 border-2 border-zinc-800 rounded-lg opacity-40 cursor-not-allowed"
+                  />
+               ))}
+            </div>
+         </div>
+      )
+   }
+   ~~~
