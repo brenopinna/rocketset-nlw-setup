@@ -314,3 +314,43 @@ condicional: {
    </div>
 </Checkbox.Root>
 ~~~
+
+# Pegando os dados do formulário
+- No React, os dados são armazenados no estado.
+- Mudanças principais (`NewHabitForm.tsx`):
+~~~tsx
+const createNewHabit = (event: FormEvent) => {
+   event.preventDefault();
+   // para não dar reload na página
+}
+
+<form onSubmit={createNewHabit} ...>
+~~~
+~~~tsx
+const [title, setTitle] = useState('')
+<input
+   ...
+   onChange={event => setTitle(event.target.value)}
+/>
+~~~
+~~~tsx
+const [weekDays, setWeekDays] = useState<number[]>([])
+// declarando o tipo da array dentro do state (<number[]>)
+
+const handleToggleWeekDay = (weekDay: number) => {
+   if(weekDays.includes(weekDay)){
+      const weekDaysWithRemovedOne = weekDays.filter(day => day !== weekDay)
+
+      setWeekDays(weekDaysWithRemovedOne)
+   } else {
+      const weekDaysWithAddedOne = [...weekDays, weekDay]
+
+      setWeekDays(weekDaysWithAddedOne)
+   }
+}
+
+<Checkbox.Root
+   ...
+   onCheckedChange={() => handleToggleWeekDay(index)}
+>
+~~~
