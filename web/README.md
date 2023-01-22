@@ -208,3 +208,27 @@ import * as Dialog from '@radix-ui/react-dialog';
 
 // a estilização é do 0, pois o radix não vem com estilo pronto.
 ~~~
+
+# Popover de ver informações do dia
+- OBS: Segue a mesma lógica do acima, vou explicar igual:
+   ~~~tsx
+   export const HabitDay = () => {
+      return(
+         <Popover.Root>
+            <Popover.Trigger className="(estilos)" />
+            // esse é aquele quadradinho do dia, ele será o trigger
+         
+            <Popover.Portal>
+               <Popover.Content className="(estilos)">
+                  <span className="(estilos)">domingo</span>
+                  <span className="(estilos)">22/01</span>
+
+                  <ProgressBar progress={40} />
+                  <Popover.Arrow height={8} width={16} className="(estilos)"/>
+                  // essa arrow foi personalizada de um jeio diferente pois se trata de um SVG.
+               </Popover.Content>
+            </Popover.Portal>
+         </Popover.Root>
+      )
+   }
+   ~~~
