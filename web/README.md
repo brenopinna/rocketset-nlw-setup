@@ -165,3 +165,46 @@ theme: {
       )
    }
    ~~~
+# Modal de criar hábito
+- OBS: Importante garantir a acessibilidade de usuários com deficiência visual, por exemplo.
+- Uma das bibliotecas usadas para isso é o Radix, que traz componentes sem estilização e com acessibilidade garantida.
+- `npm install @radix-ui/react-dialog`
+~~~tsx
+//Header.tsx => vou botar as coisas do modal aq, pois o button que o abre está no header, ou seja, o modal faz parte do componente header de certa forma.
+import * as Dialog from '@radix-ui/react-dialog';
+// não importei separadamente pois faz mais sentido no código dessa forma (Dialog.Content, Dialog.Overlay, etc)
+//explicando linha a linha:
+<Dialog.Root>
+   <Dialog.Trigger
+      type='button'
+      className="(estilos)"
+   >
+      <Plus size={20} className="(estilos)" />
+      Novo Hábito
+   </Dialog.Trigger>
+   <Dialog.Portal>
+      <Dialog.Overlay className="(estilos)" />
+      <Dialog.Content className="(estilos)">
+         <Dialog.Close className="(estilos)">
+            <X
+               size={24}
+               aria-label="Fechar"
+            />
+         </Dialog.Close>
+         <Dialog.Title className="(estilos)">
+            Criar Hábito
+         </Dialog.Title>
+         <NewComponentForm />
+      </Dialog.Content>
+   </Dialog.Portal>
+</Dialog.Root>
+//Dialog.Root => Container de todas as informações pertinentes ao modal.
+//Dialog.Trigger => Botão que vai abrir o Dialog
+//Dialog.Portal => Serve pra informar ao react que vai ser um elemento FORA do header, ele seria renderizado externamente a ele, no body fora da #root.
+//Dialog.Overlay => Aquele background preto que aparece quando abre o modal
+//Dialog.Close => Trigger para fechar o modal
+// Dialog.Title => título, importante pra acessibilidade (o leitor de tela diria "modal de criar hábito aberto")
+// o <X /> tem uma aria-label pois ele não é do radix, logo não tem a acessibilidade previamente configurada.
+
+// a estilização é do 0, pois o radix não vem com estilo pronto.
+~~~
