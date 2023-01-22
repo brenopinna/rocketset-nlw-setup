@@ -72,4 +72,87 @@ export const appRoutes = async (app: FastifyInstance) => {
          completedHabits
       }
    })
+
+   app.patch('/habits/:id/toggle', async (request) => {
+      const toggleHabitParams = z.object({
+         id: z.string().uuid()
+      })
+
+      const { id } = toggleHabitParams.parse(request.params)
+
+      const today = dayjs().startOf('day').toDate()
+
+      let day = await prisma.day.findUnique({
+         where: {
+            date: today
+         }
+      })
+
+      if(!day){
+         day = await prisma.day.create({
+            data: {
+               date: today
+            }
+         })
+      }
+
+      const dayHabit = await prisma.dayHabit.findUnique({
+         where: {
+            day_id_habit_id: {
+               day_id: day.id,
+               habit_id: id
+            }
+         }
+      })
+
+      if(dayHabit){
+         // remove o hábito num dia específico
+         await prisma.dayHabit.delete({
+            where: {
+               id: dayHabit.id
+            }
+         })
+      }else{
+         // completa o hábito num dia específico
+         await prisma.dayHabit.create({
+            data: {
+               day_id: day.id,
+               habit_id: id
+            }
+         })
+      }
+
+   })
+
+   app.get('/summary', async (request) => {
+      // [ { date: 17/01, amount: 5, completed: 1 }, {}, {} ]
+      // query mais complexa, mais condições, relacionamentos \=> escrever o SQL na mão (Raw)
+      //  Prisma ORM: Se eu trocar o tipo do banco de dados ele se adapta.
+      // SQL Raw => O que for escrito só vai funcionar no SQLite, banco q estou usando.
+   
+      const summary = await prisma.$queryRaw`
+         SELECT
+            D.id,
+            D.date,
+            (
+               SELECT
+                  cast(count(*) as float)
+               FROM day_habits DH
+               WHERE DH.day_id = D.id
+            ) as completed,
+            (
+               SELECT
+                  cast(count(*) as float)
+               FROM habit_week_days HWD
+               JOIN habits H
+                  ON H.id = HWD.habit_id
+               WHERE
+                  HWD.week_day = cast(strftime('%w', D.date/1000.0, 'unixepoch') as int)
+                  AND H.created_at <= D.date
+            ) as amount
+         FROM days D
+      `
+
+      return summary
+   })
 }

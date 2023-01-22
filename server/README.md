@@ -333,7 +333,7 @@ await prisma.habit.create({
 })
 ~~~
 
-# Rota de get das informações de cada dia
+## Rota Get Day
 ~~~ts
 // vou explicar somente as coisas diferentes, pra ganhar tempo
 app.get('/day', async (request) => {
@@ -384,5 +384,119 @@ app.get('/day', async (request) => {
       possibleHabits,
       completedHabits
    }
+})
+~~~
+## Rota Patch Habits
+~~~ts
+app.patch('/habits/:id/toggle', async (request) => {
+   //  esse :id é um route param, de identificação, significa que é um hábito específico.
+   const toggleHabitParams = z.object({
+      id: z.string().uuid()
+      // esse uuid é a forma do zod de validar que é do formato uuid.
+   })
+
+   const { id } = toggleHabitParams.parse(request.params)
+
+   // dayjs() retorna o dia atual, isso pois a aplicação só vai mudar o estado do hábito somente se estiver naquele dia.
+   const today = dayjs().startOf('day').toDate()
+   //  o startOf é pra facilitar a comparação de datas no backend.
+
+   // esse trecho aqui é o seguinte: o dia só vai ser registrado no banco de dados se ele tiver algum hábito concluído, então é armazenado numa let. se ele existir na tabela, pega-se as informações dele. caso contrário, ele é criado no banco de dados.
+   let day = await prisma.day.findUnique({
+      where: {
+         date: today
+      }
+   })
+
+   if(!day){
+      day = await prisma.day.create({
+         data: {
+            date: today
+         }
+      })
+   }
+
+   const dayHabit = await prisma.dayHabit.findUnique({
+      where: {
+         day_id_habit_id: {
+            day_id: day.id,
+            habit_id: id
+         }
+      }
+   })
+
+   // se já existir a relação entre o hábito e o dia, deleta. se não, adiciona.
+   if(dayHabit){
+      // remove o hábito num dia específico
+      await prisma.dayHabit.delete({
+         where: {
+            id: dayHabit.id
+         }
+      })
+   }else{
+      // completa o hábito num dia específico
+      await prisma.dayHabit.create({
+         data: {
+            day_id: day.id,
+            habit_id: id
+         }
+      })
+   }
+})
+~~~
+
+## Rota Get Summary
+~~~ts
+app.get('/summary', async (request) => {
+   /*
+   retorno: uma array de objetos, cada um seguindo a seguinte estrutura:
+   {
+      date: 17/01,
+      amount: 5 (quantidade de hábitos possíveis),
+      completed: 1
+   }
+   */
+   // query mais complexa, mais condições, relacionamentos => escrever o SQL na mão (Raw)
+   //  Prisma ORM: Se eu trocar o tipo do banco de dados ele se adapta.
+   // SQL Raw => O que for escrito só vai funcionar no SQLite, banco q estou usando, ou seja, se trocar terei de reescrever essa parte.
+
+// comando pra fazer consultas ao banco com sql raw
+   const summary = await prisma.$queryRaw`
+      SELECT
+         D.id,
+         D.date,
+         ${/*esses dois blocos abaixo são subqueries, consultas dentro de uma consulta.*/}
+         (
+            SELECT
+               cast(count(*) as float)
+            FROM day_habits DH
+            WHERE DH.day_id = D.id
+         ) as completed,
+         (
+            SELECT
+               cast(count(*) as float)
+            FROM habit_week_days HWD
+            JOIN habits H
+               ON H.id = HWD.habit_id
+            WHERE
+               ${
+                  /*
+                  essa função strftime converte de um tipo de data para outro,
+                  nesse caso do unixepoch (tempo desde 1970 em segundos)
+                  para mostrar somente o dia da semana, indicado por %w.
+
+                  foi preciso dividir por 1000 pois o SQLite guarda o tempo em milissegundos, mas o unix epoque guarda em segundos.
+
+                  no fim, usei o cast para converter para int, já que vem como string.
+                  */
+               }
+               HWD.week_day = cast(strftime('%w', D.date/1000.0, 'unixepoch') as int)
+               ${/*só retorna os hábitos criados antes da data desse dia*/}
+               AND H.created_at <= D.date
+         ) as amount
+      FROM days D
+   `
+
+   return summary
 })
 ~~~
