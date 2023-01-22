@@ -286,3 +286,31 @@ condicional: {
 }
 */
 ~~~
+
+# Adicionando checkboxes
+- Neste caso vou comentar somente uma coisa específica do tailwind, o resto é compreensível a partir da leitura das instruções acima do radix.
+~~~tsx
+//NewHabitForm.tsx
+<div className='mt-6 flex flex-col gap-3'>
+   <Checkbox.Root className="(style) group">
+      <div className='(style) group-data-[state=checked]:bg-green-500 group-data-[state=checked]:border-green-500'>
+         <Checkbox.Indicator>
+            <Check size={20} className='text-white' />
+         </Checkbox.Indicator>
+      </div>
+
+      <span className='(style) group-data-[state=checked]:text-zinc-400 group-data-[state=checked]:line-through'>
+         Beber 2L de água
+      </span>
+   </Checkbox.Root>
+</div>
+// o radix por padrão tem um atributo data-state na checkbox, e ele pode ser usado pelo tailwind para uma estilização condicional.
+// porém, esse atributo só é colocado nos elementos Checkbox. para fazer a estilização do html normal, deve-se usar o group do tailwind:
+<Checkbox.Root className="group">
+   <div className='group-data-[state=checked]:(style)'>
+      <Checkbox.Indicator>
+         <Check size={20} className='text-white' />
+      </Checkbox.Indicator>
+   </div>
+</Checkbox.Root>
+~~~
