@@ -355,3 +355,107 @@ const handleToggleWeekDay = (weekDay: number) => {
    onCheckedChange={() => handleToggleWeekDay(index)}
 >
 ~~~
+
+# Conexão com a API
+- Rota Get Summary
+   - Retorna os dias cadastrados (ou seja, com hábitos cadastrados nele) no banco de dados.
+   - `npm install axios`
+   - OBS: a pasta lib é usada para configurar interação com outras biblotecas.
+   - `src/lib/axios.ts`:
+   ~~~tsx
+   import axios from "axios";
+
+   export const api = axios.create({
+      baseURL: 'http://localhost:3333'
+   })
+   // pra facilitar, pois essa é uma parte imutável na url do backend.
+   ~~~
+   - `SummaryTable.tsx`
+   ~~~ts
+   type Summary = Array<{
+      id: string
+      date: string
+      amount: number
+      completed: number
+   }>
+   /*
+      type Summary = {
+         id: string,
+         date: string,
+         amount: int,
+         completed: int
+      }[]
+      é uma opção tb
+   */
+
+   export const SummaryTable = () => {
+      const [summary, setSummary] = useState<Summary>([])
+
+      useEffect(() => {
+         api.get('/summary').then(response => {
+            setSummary(response.data)
+         })
+      }, [])
+      // resto das coisas 
+   }
+   ~~~
+   ~~~tsx
+   {summaryDates.map(date => {
+      const dayInSummary = summary.find(day => {
+         return dayjs(date).isSame(day.date, 'day')
+      })
+      // traduzindo: pra cada dia do summaryDates (todos os dias até hoje), pega os dias cadastrados (com hábitos, summary) e retorna ele CASO seja o mesmo dia. se não, retorna undefined.
+
+      return (
+         <HabitDay
+            key={date.toString()}
+            date={date}
+            amount={dayInSummary?.amount}
+            completed={dayInSummary?.completed}
+         />
+         // esse operador objeto?.atributo significa se existir, pega o atributo, senão, undefined
+      )
+   })}
+   ~~~
+   - `HabitDay.tsx`
+   ~~~tsx
+   interface HabitDayProps {
+      date: Date
+      completed?: number
+      amount?: number
+      // ?: significa q não é obrigatório ter esse atributo na interface.
+   }
+   //os params do HabitDay ganharam valor padrão de 0, pra nao ficarem como undefined.
+   export const HabitDay = ({ completed = 0, amount = 0, date }: HabitDayProps) => {
+   const completedPercentage = amount > 0 ? Math.round((completed/amount) * 100) : 0
+   // essa validação é pra evitar que ocorra uma divisão por zero
+   }
+   ~~~
+   - pequena configuração em `lib/dayjs.ts`
+   ~~~ts
+   import dayjs from "dayjs";
+   import 'dayjs/locale/pt-br'
+
+   dayjs.locale('pt-br')
+   //para pegar os dias da semana em português.
+   // importa isso aq no App, pra ficar disponível pra todos os componentes, que nem o arquivo de estilo css.
+   ~~~
+   - de volta ao `HabitDay.tsx`
+   ~~~tsx
+   const dayAndMonth = dayjs(date).format('DD/MM') //retorna a data formatada em dia/mês
+   const dayOfWeek = dayjs(date).format('dddd') //retorna dia da semana por extenso
+   
+   return(
+      <Popover.Root>
+         ...
+      
+         <Popover.Portal>
+            <Popover.Content className="min-w-[320px] p-6 rounded-2xl bg-zinc-900 flex flex-col">
+               <span className="font-semibold text-zinc-400">{dayOfWeek}</span>
+               <span className="mt-1 font-extrabold leading-tight text-3xl">{dayAndMonth}</span>
+               ...
+            </Popover.Content>
+         </Popover.Portal>
+      </Popover.Root>
+   )
+   ~~~
