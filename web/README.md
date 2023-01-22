@@ -320,6 +320,7 @@ condicional: {
 - Mudanças principais (`NewHabitForm.tsx`):
 ~~~tsx
 const createNewHabit = (event: FormEvent) => {
+   // esse type foi pego dando ctrl+click até achar o type do evento.
    event.preventDefault();
    // para não dar reload na página
 }
