@@ -232,3 +232,57 @@ import * as Dialog from '@radix-ui/react-dialog';
       )
    }
    ~~~
+
+# Cores dinâmicas nos HabitDays
+
+- no `SummaryTable.tsx`:
+   ~~~tsx
+   // só para adicionar aleatoriedade, para ver as cores mesmo sem conectar com a API.
+   {summaryDates.map(summaryDate => {
+      return (
+         <HabitDay
+            key={summaryDate.toString()}
+            amount={5}
+            completed={Math.round(Math.random() * 5)}
+         />
+      )
+   })}
+   ~~~
+
+- no `HabitDay.tsx`:
+- `npm install clsx`, lib para classes condicionais.
+~~~tsx
+import clsx from 'clsx';
+
+interface HabitDayProps {
+   completed: number,
+   amount: number
+}
+
+export const HabitDay = ({ completed, amount }: HabitDayProps) => {
+   const completedPercentage = Math.round((completed/amount) * 100)
+
+   return(
+      <Popover.Root>
+         <Popover.Trigger
+            className={clsx("w-10 h-10 rounded-lg", {
+               'bg-zinc-900 border-2 border-zinc-800': completedPercentage === 0,
+               'bg-violet-900 border-violet-700': completedPercentage > 0 && completedPercentage < 20,
+               'bg-violet-800 border-violet-600': completedPercentage >= 20 && completedPercentage < 40,
+               'bg-violet-700 border-violet-500': completedPercentage >= 40 && completedPercentage < 60,
+               'bg-violet-600 border-violet-500': completedPercentage >= 60 && completedPercentage < 80,
+               'bg-violet-500 border-violet-400': completedPercentage >= 80
+            })}
+         />
+         ...
+      </Popover.Root>
+   )
+}
+// esse clsx recebe 2 parâmetros:
+//clsx(padrão, condicional)
+/*
+condicional: {
+   'classe': condição
+}
+*/
+~~~
