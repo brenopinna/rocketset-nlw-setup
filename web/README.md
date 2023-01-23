@@ -559,3 +559,27 @@ export const HabitsList = ({ date }: HabitsListProps) => {
    );
 }
 ~~~
+# Desabilitando marcação de hábitos de dias anteriores
+- mudanças em `HabitsList.tsx`:
+~~~tsx
+const isDayBefore = dayjs(date)
+      .endOf('day')
+      .isBefore(new Date())
+// retorna se a data desse hábito, ao fim do dia (pra considerar o dia todo), é anterior à data atual
+
+return (
+   <div className='mt-6 flex flex-col gap-3'>
+      {habitsInfo?.possibleHabits.map(habit => {
+         return (
+            <Checkbox.Root
+               disabled={isDayBefore}
+               // desabilita se for de uma data anterior.
+               defaultChecked={habitsInfo.completedHabits.includes(habit.id)}
+               //troquei o checked por defaultChecked, pra poder alterar.
+            >
+            ...
+         )
+      })}
+   </div>
+);
+~~~
