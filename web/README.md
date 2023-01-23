@@ -583,3 +583,35 @@ return (
    </div>
 );
 ~~~
+
+# Toggle Checked nos hábitos completos
+- `HabitsList.tsx`
+~~~tsx
+const handleToggleChecked = async (habitId: string) => {
+   await api.patch(`/habits/${habitId}/toggle`)
+   
+   const isHabitAlreadyCompleted = habitsInfo!.completedHabits.includes(habitId)
+   // essa exclamação basicamente diz pro typescript "essa informação COM CERTEZA vai existir, pois no map dos habitsInfo, la no return, eu deixei a condição que ele só acontecerá caso ele não seja nulo (habitsInfo?.map...)"
+
+   let completedHabits: string[] = []
+   // ids dos habitos completos
+
+   if(isHabitAlreadyCompleted) {
+      completedHabits = habitsInfo!.completedHabits.filter(habit => habit === habitId)
+   } else {
+      completedHabits = [...habitsInfo!.completedHabits, habitId]
+   }
+
+   setHabitsInfo({
+      possibleHabits: habitsInfo!.possibleHabits,
+      completedHabits: completedHabits
+   })
+}
+...
+<Checkbox.Root
+   onCheckedChange={() => handleToggleChecked(habit.id)}
+>
+   ...
+</Checkbox.Root>
+...
+~~~
