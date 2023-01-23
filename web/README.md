@@ -459,3 +459,40 @@ const handleToggleWeekDay = (weekDay: number) => {
       </Popover.Root>
    )
    ~~~
+   - `NewHabitForm.tsx`
+   ~~~tsx
+   const createNewHabit = async (event: FormEvent) => {
+      event.preventDefault();
+
+      if (!title || weekDays.length === 0) {
+         return
+      }
+
+      await api.post('/habits', {
+         title,
+         weekDays
+      })
+      // cria novo hábito
+
+      setTitle('')
+      setWeekDays([])
+      // reseta formulario
+      alert('Hábito criado com sucesso!')
+   }
+   ...
+   <input
+      ...
+      value={title}
+      // pra apagar quando der o setTitle(')
+      onChange={event => setTitle(event.target.value)}
+   />
+   ...
+   <Checkbox.Root
+      ...
+      checked={weekDays.includes(index)}
+      // pra resetar quando der o setWeekDays([])
+      onCheckedChange={() => handleToggleWeekDay(index)}
+   >
+      ...
+   </Checkbox.Root>
+   ~~~
