@@ -7,6 +7,7 @@ import { api } from '../lib/axios';
 interface HabitsListProps {
    date: Date
    onCompletedChange: (completed: number) => void
+   setAmount: (amount: number) => void
 }
 
 type HabitsInfo = {
@@ -18,7 +19,7 @@ type HabitsInfo = {
    completedHabits: Array<string>
 }
 
-export const HabitsList = ({ date, onCompletedChange }: HabitsListProps) => {
+export const HabitsList = ({ date, onCompletedChange, setAmount }: HabitsListProps) => {
    const [habitsInfo, setHabitsInfo] = useState<HabitsInfo>()
 
    useEffect(() => {
@@ -27,6 +28,7 @@ export const HabitsList = ({ date, onCompletedChange }: HabitsListProps) => {
             date: date.toISOString()
          }
       }).then(response => {
+         setAmount(response.data.possibleHabits.length)
          setHabitsInfo(response.data)
       })
    }, [])
