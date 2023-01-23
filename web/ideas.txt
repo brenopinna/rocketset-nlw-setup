@@ -1,0 +1,5 @@
+- Autenticação (Firebase, Auth0)
+- Notificações Push / Service Workers
+- Perfil Público e com gráfico de resumo (tipo o gráfico de commits do github)
+
+- resolver bug dos completed habits, estabelecendo comunicação entre o formulário e o habitday (context api)
