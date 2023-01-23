@@ -685,3 +685,14 @@ export const HabitsList = ({ date, onCompletedChange }: HabitsListProps) => {
    ...
 }
 ~~~
+
+# Ajustes finais no front
+- Só o uso de classes do tailwind para melhorar os efeitos de focus, hover, mudança de tamanho da barra, etc.
+   - `transition-all`: efeito de transição com duração pré-definida, para mudar usar o `duration`.
+   - focus:outline-none: para remover a linha branca (e feia) do outline.
+   - focus:ring: adiciona um anel em volta do input.
+      - ring-2: largura do ring
+      - ring-offset-2: espaço entre o elemento e o ring
+      - as demais propriedades seguem as regras normais do tailwind de cores.
+   - group-focus: efeito de focus num elemento que pertence a um grupo.
+   - transition-colors: transição só nas cores do elemento.
