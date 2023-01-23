@@ -615,3 +615,73 @@ const handleToggleChecked = async (habitId: string) => {
 </Checkbox.Root>
 ...
 ~~~
+
+# Atualizando os completedHabits sem dar reload na página.
+- `SummaryTable.tsx`
+~~~tsx
+return (
+   <div className="w-full flex">
+      ...
+      <div className="grid grid-rows-7 grid-flow-col gap-3">
+         {summary.length > 0 && summaryDates.map(date => {
+            // alterei aqui para só dar o map quando a API já tiver pego as informações do summary.
+            ...
+            return (
+               <HabitDay
+                  ...
+                  defaultCompleted={dayInSummary?.completed}
+                  // só uma mudança de nome mesmo
+               />
+            )
+         })}
+         ...
+      </div>
+   </div>
+)
+~~~
+- `HabitDay.tsx`
+~~~tsx
+interface HabitDayProps {
+   ...
+   defaultCompleted?: number
+   ...
+}
+
+export const HabitDay = ({ defaultCompleted = 0, amount = 0, date }: HabitDayProps) => {
+   const [completed, setCompleted] = useState(defaultCompleted)
+   ...
+   const handleCompletedChange = (completed: number) => {
+      setCompleted(completed)
+   }
+   return(
+      <Popover.Root>
+         ...
+      
+         <Popover.Portal>
+            <Popover.Content className="min-w-[320px] p-6 rounded-2xl bg-zinc-900 flex flex-col">
+               ...
+               <HabitsList date={date} onCompletedChange={handleCompletedChange} />
+               ...
+            </Popover.Content>
+         </Popover.Portal>
+      </Popover.Root>
+   )
+}
+~~~
+- `HabitsList.tsx`
+~~~tsx
+interface HabitsListProps {
+   date: Date
+   onCompletedChange: (completed: number) => void
+}
+
+export const HabitsList = ({ date, onCompletedChange }: HabitsListProps) => {
+   ..
+
+   const handleToggleChecked = async (habitId: string) => {
+      ...
+      onCompletedChange(completedHabits.length) // informar pro HabitDay que tem mudança nos completos
+   }
+   ...
+}
+~~~
