@@ -496,3 +496,66 @@ const handleToggleWeekDay = (weekDay: number) => {
       ...
    </Checkbox.Root>
    ~~~
+
+# Pegando os hábitos (completos ou não) de cada dia
+- Ao invés de fazer a requisição no `HabitDay.tsx`, farei no novo componente `<HabitsList />`, pois ele só é renderizado quando o popover aparece, o que reduz a quantidade de chamadas da API de uma vez só.
+- `HabitDay.tsx`:
+~~~tsx
+export const HabitDay = ({ completed = 0, amount = 0, date }: HabitDayProps) => {
+   ...
+   
+   return(
+      <Popover.Root>
+         ...
+      
+         <Popover.Portal>
+            <Popover.Content>
+            ...
+               <HabitsList date={date} />
+            ...
+            </Popover.Content>
+         </Popover.Portal>
+      </Popover.Root>
+   )
+}
+~~~
+- `HabitsList.tsx`:
+~~~tsx
+...
+
+export const HabitsList = ({ date }: HabitsListProps) => {
+   const [habitsInfo, setHabitsInfo] = useState<HabitsInfo>()
+
+   useEffect(() => {
+      api.get('/day', {
+         // params pois essa rota envia a informação por querys na url
+         params: {
+            date: date.toISOString()
+            //retorna uma data em uma string no formato ISO (2022-01-22....)
+         }
+      }).then(response => {
+         setHabitsInfo(response.data)
+      })
+   }, [])
+
+   return (
+      <div className='mt-6 flex flex-col gap-3'>
+         {habitsInfo?.possibleHabits.map(habit => {
+            return (
+               <Checkbox.Root
+                  key={habit.id}
+                  checked={habitsInfo.completedHabits.includes(habit.id)}
+                  className="flex items-center gap-3 group"
+               >
+                  ...
+
+                  <span className='font-semibold text-xl text-white leading-tight group-data-[state=checked]:text-zinc-400 group-data-[state=checked]:line-through'>
+                     {habit.title}
+                  </span>
+               </Checkbox.Root>
+            )
+         })}
+      </div>
+   );
+}
+~~~
