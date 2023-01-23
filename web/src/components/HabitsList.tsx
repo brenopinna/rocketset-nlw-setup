@@ -38,7 +38,7 @@ export const HabitsList = ({ date }: HabitsListProps) => {
       let completedHabits: string[] = []
 
       if(isHabitAlreadyCompleted) {
-         completedHabits = habitsInfo!.completedHabits.filter(habit => habit === habitId)
+         completedHabits = habitsInfo!.completedHabits.filter(habit => habit !== habitId)
       } else {
          completedHabits = [...habitsInfo!.completedHabits, habitId]
       }
