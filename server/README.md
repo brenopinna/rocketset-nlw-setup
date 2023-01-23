@@ -500,3 +500,20 @@ app.get('/summary', async (request) => {
    return summary
 })
 ~~~
+
+# EXTRA: Modificação para conseguir rodar o seed (ou seja, apagar o banco e depois popular)
+
+add 
+~~~js
+onDelete: Cascade
+~~~
+
+em cada chave estrangeira, ele vai ficar assim 
+~~~js
+  habit Habit @relation(fields: [habit_id], references: [id], onDelete: Cascade)
+~~~
+depois roda
+~~~
+npx prisma migrate dev
+npx prisma db seed
+~~~
